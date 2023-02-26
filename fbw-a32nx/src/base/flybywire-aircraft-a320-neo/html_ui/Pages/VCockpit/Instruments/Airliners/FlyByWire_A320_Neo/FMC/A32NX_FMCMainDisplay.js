@@ -3158,11 +3158,11 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        const origin = this.flightPlanManager.getOrigin();
+        const origin = this.flightPlanService.active.originAirport;
 
         let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         if (origin) {
-            elevation = await this.facilityLoader.GetAirportFieldElevation(origin.icao);
+            elevation = origin.location.alt;
         }
 
         const minimumAltitude = elevation + 400;

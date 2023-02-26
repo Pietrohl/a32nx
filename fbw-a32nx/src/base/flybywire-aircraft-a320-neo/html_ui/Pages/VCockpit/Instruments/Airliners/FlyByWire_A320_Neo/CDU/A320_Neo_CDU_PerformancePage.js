@@ -1062,11 +1062,11 @@ class CDUPerformancePage {
             return;
         }
 
-        const origin = mcdu.flightPlanService.active.originAirport.ident;
+        const origin = mcdu.flightPlanService.active.originAirport;
 
         let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
         if (origin) {
-            elevation = await mcdu.facilityLoader.GetAirportFieldElevation(origin);
+            elevation = origin.location.alt;
         }
 
         if (!mcdu.thrustReductionAltitudeIsPilotEntered) {
@@ -1087,10 +1087,28 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
         }
     }
+
+    /**
+     * @param mcdu {FMCMainDisplay}
+     */
     static async UpdateEngOutAccFromOrigin(mcdu) {
         if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
             return;
         }
+
+        const origin = mcdu.flightPlanService.active.originAirport;
+
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+
+        if (origin) {
+            elevation = origin.location.alt;
+        }
+
+        const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
+        const alt = Math.round((elevation + offset) / 10) * 10;
+
+        mcdu.engineOutAccelerationAltitude = alt;
+        mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
 
         // FIXME move this in FMS
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", 1500);
